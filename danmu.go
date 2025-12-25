@@ -63,7 +63,13 @@ func (s streamer) getDanmu(ctx context.Context, info liveInfo) {
 	checkErr(err)
 	_ = ac.StartDanmu(ctx, false)
 	if s.Danmu {
-		ac.WriteASS(ctx, info.cfg, info.assFile, true)
+		// 如果是只开启了弹幕录制，使用特殊弹幕录制方法
+		if !s.Record {
+			_, room, _ := fetchLiveInfo(s.UID)
+			ac.WriteASSWithLiveStartTime(ctx, info.cfg, info.assFile, true, room.startTime)
+		} else { // 若开启了录播，使用原来方法
+			ac.WriteASS(ctx, info.cfg, info.assFile, true)
+		}
 		defer s.moveFile(info.assFile)
 	} else if s.KeepOnline {
 		for {
@@ -93,7 +99,13 @@ Outer:
 					checkErr(err)
 					_ = ac.StartDanmu(ctx, false)
 					if s.Danmu {
-						ac.WriteASS(ctx, info.cfg, info.assFile, false)
+						// 如果是只开启了弹幕录制，使用特殊弹幕录制方法
+						if !s.Record {
+							_, room, _ := fetchLiveInfo(s.UID)
+							ac.WriteASSWithLiveStartTime(ctx, info.cfg, info.assFile, false, room.startTime*1000)
+						} else { // 若开启了录播，使用原来方法
+							ac.WriteASS(ctx, info.cfg, info.assFile, false)
+						}
 					} else if s.KeepOnline {
 						for {
 							if danmu := ac.GetDanmu(); danmu == nil {
@@ -116,6 +128,10 @@ Outer:
 	}
 	if s.Danmu {
 		lPrintln(s.longID() + "的直播弹幕下载已经结束")
+		// 处理下载完成的弹幕文件
+		if s.DanmuToDb {
+			s.processDanmuToDb(info.assFile)
+		}
 		if s.Notify.NotifyDanmu {
 			if !s.Record {
 				desktopNotify(s.Name + "的直播弹幕下载已经结束")

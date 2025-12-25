@@ -52,6 +52,7 @@ make
 git clone --recursive https://github.com/orzogc/acfunlive.git
 cd acfunlive
 # Linux下编译GUI版本需加上 -tags tray 参数，Windows下编译没有控制台的GUI版本需加上 -tags tray -ldflags -H=windowsgui 参数
+# go build -tags tray -ldflags "-s -w -H=windowsgui"
 go build
 # 如果不需要webui可以不运行下面的命令
 cd acfunlive-ui
@@ -84,6 +85,7 @@ yarn generate
             },
         "record": true,     // 是否下载直播视频
         "danmu": true,      // 是否下载直播弹幕
+        "danmuToDb": false, // 是否将直播弹幕保存到数据库
         "keepOnline": true, // 是否在该主播的直播间挂机，目前主要用于挂粉丝牌等级
         "bitrate": 0,       // 设置要下载的直播源的最高码率（Kbps），需自行手动修改设置
         "directory": "",    // 直播视频和弹幕下载结束后会被移动到该文件夹，其值最好是绝对路径，会覆盖config.json里的设置，需自行手动修改设置
@@ -102,6 +104,9 @@ yarn generate
 | 直播源名字 | 高清 | 超清 | 蓝光 4M | 蓝光 5M | 蓝光 6M | 蓝光 7M | 蓝光 8M |
 | ---------- | --------- | --------- | ------- | ------- | ------- | ------- | ------- |
 | 码率 | 1000/2000 | 2000/3000 | 4000 | 5000 | 6000 | 7000 | 8000 |
+
+#### 弹幕保存到数据库功能说明
+你可以通过配置`live.json`中的`danmuToDb`项来控制弹幕保存到数据库功能开关，如果你需要这个功能，需要先打开`danmu`项，否则该项功能不会生效。
 
 #### config.json
 
@@ -130,6 +135,15 @@ yarn generate
         "sendQQGroup": [        // 发送开播提醒到数组里的所有QQ群（需要QQ机器人在这些QQ群里，最好是管理员，会@全体成员），会被live.json里的设置覆盖
             1234567
         ]
+    },
+    "database": {
+        "type": "sqlite",                 // 保存弹幕数据库类型 sqlite或mysql
+        "sqliteFile": "D:/acfunlive.db",  // sqlite数据库位置
+        "host": "",                       // mysql主机地址
+        "port": 3306,                     // mysql端口
+        "user": "xxx",                    // mysql用户名
+        "password": "xxx",                // mysql密码
+        "database": "acfundb"             // mysql数据库名
     }
 }
 ```
@@ -161,6 +175,7 @@ Windows 下如果要使用命令行模式，下载 CLI 版本，具体参数看 
 如果实在无法登陆 QQ，修改配置文件所在文件夹里的`qqdevice.json`，将`protocol`改为 2 可以使用手机 QQ 扫码登陆。
 
 如果在一台电脑/服务器能登陆 QQ，而另外一台电脑/服务器登陆失败，可以将登陆成功的`qqdevice.json`和`qqsession.token`复制到登陆失败的电脑/服务器配置文件所在文件夹里，再启动本程序试试。
+
 
 ### Docker
 

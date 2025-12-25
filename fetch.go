@@ -46,9 +46,11 @@ var (
 
 // 直播间的数据结构
 type liveRoom struct {
-	name   string // 主播名字
-	title  string // 直播间标题
-	liveID string // 直播 ID
+	name       string // 主播名字
+	title      string // 直播间标题
+	liveID     string // 直播 ID
+	startTime  int64  // 直播开始时间
+	streamName string // streamName
 }
 
 // 守护徽章信息
@@ -360,6 +362,18 @@ func fetchLiveInfo(uid int) (isLive bool, room *liveRoom, e error) {
 		isLive = true
 		room.title = string(v.GetStringBytes("title"))
 		room.liveID = string(v.GetStringBytes("liveId"))
+		room.streamName = string(v.GetStringBytes("streamName"))
+		// 获取 createTime 字段（注意：是 int64，不是字符串）
+		if createTimeVal := v.Get("createTime"); createTimeVal != nil {
+			if createTime, err := createTimeVal.Int64(); err == nil {
+				// 将毫秒时间戳转为 time.Time
+				room.startTime = createTime
+			} else {
+				lPrintErrf("createTime 不是有效整数: %v", createTimeVal)
+			}
+		} else {
+			lPrintErr("JSON 中缺少 createTime 字段")
+		}
 	} else {
 		isLive = false
 		room.title = ""

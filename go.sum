@@ -15,6 +15,8 @@ github.com/andybalholm/brotli v1.1.0/go.mod h1:sms7XGricyQI9K10gOSf56VKKWS4oLer5
 github.com/andybalholm/cascadia v1.3.2 h1:3Xi6Dw5lHF15JtdcmAHD3i1+T8plmv7BQ/nsViSLyss=
 github.com/andybalholm/cascadia v1.3.2/go.mod h1:7gtRlve5FxPPgIgX36uWBX58OdBsSS6lUvCFb+h7KvU=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
+github.com/cyndi905/acfundanmu v0.0.0-20251225103627-05c598004cb1 h1:PNwBkccLOEdRRPNeQKKj1w/qtITQd4LjumFWHgHNimM=
+github.com/cyndi905/acfundanmu v0.0.0-20251225103627-05c598004cb1/go.mod h1:IX7NLxpewGhcxj1GM/T6uHqy2p3wODZ60ajgzEuxYtg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -78,8 +80,6 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d h1:VhgPp6v9qf9Agr/56bj7Y/xa04UccTW04VP0Qed4vnQ=
 github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d/go.mod h1:YUTz3bUH2ZwIWBy3CJBeOBEugqcmXREj14T+iG/4k4U=
-github.com/orzogc/acfundanmu v0.0.0-20240910132643-93679007a97d h1:6fOdERp9RiugE/wvWD7tFuoM69nZwp4wmqA6T5APOTs=
-github.com/orzogc/acfundanmu v0.0.0-20240910132643-93679007a97d/go.mod h1:IX7NLxpewGhcxj1GM/T6uHqy2p3wODZ60ajgzEuxYtg=
 github.com/orzogc/fastws v1.0.5-0.20230809182400-6c9094d8c52e h1:Y9G+uvJg6lVYmIo37SIQu3uiRdELT1fikmYcM1ifK8g=
 github.com/orzogc/fastws v1.0.5-0.20230809182400-6c9094d8c52e/go.mod h1:t7IMS/l1UPNzSM/ZgZRfplA8cBi0KyqFIEflap5VOOU=
 github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c h1:rp5dCmg/yLR3mgFuSOe4oEnDDmGLROTvMragMUXpTQw=

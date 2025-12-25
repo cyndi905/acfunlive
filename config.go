@@ -36,6 +36,7 @@ type streamer struct {
 	Notify      notify  `json:"notify"`      // 开播提醒相关
 	Record      bool    `json:"record"`      // 是否自动下载直播视频
 	Danmu       bool    `json:"danmu"`       // 是否自动下载直播弹幕
+	DanmuToDb   bool    `json:"danmuToDb"`   // 是否自动将直播弹幕写入数据库
 	KeepOnline  bool    `json:"keepOnline"`  // 是否在该主播的直播间挂机，目前主要用于挂粉丝牌等级
 	Bitrate     int     `json:"bitrate"`     // 下载直播视频的最高码率
 	Directory   string  `json:"directory"`   // 直播视频和弹幕下载结束后会被移动到该文件夹，会覆盖 config.json 里的设置
@@ -50,15 +51,27 @@ var streamers struct {
 	old          map[int]streamer // 旧的主播的设置数据
 }
 
+// 数据库配置
+type databaseConfig struct {
+	Type       string `json:"type"` // "sqlite" 或 "mysql"
+	SqliteFile string `json:"sqliteFile"`
+	Host       string `json:"host"`
+	Port       int    `json:"port"`
+	User       string `json:"user"`
+	Password   string `json:"password"`
+	Database   string `json:"database"`
+}
+
 // 设置数据
 type configData struct {
-	Source         string    `json:"source"`         // 直播源，有 hls 和 flv 两种
-	Output         string    `json:"output"`         // 直播下载视频格式的后缀名
-	WebPort        int       `json:"webPort"`        // web API 的本地端口
-	Directory      string    `json:"directory"`      // 直播视频和弹幕下载结束后会被移动到该文件夹，会被 live.json 里的设置覆盖
-	Acfun          acfunUser `json:"acfun"`          // AcFun 帐号相关
-	AutoKeepOnline bool      `json:"autoKeepOnline"` // 是否自动在有守护徽章的直播间挂机
-	Mirai          miraiData `json:"mirai"`          // Mirai 相关设置
+	Source         string         `json:"source"`         // 直播源，有 hls 和 flv 两种
+	Output         string         `json:"output"`         // 直播下载视频格式的后缀名
+	WebPort        int            `json:"webPort"`        // web API 的本地端口
+	Directory      string         `json:"directory"`      // 直播视频和弹幕下载结束后会被移动到该文件夹，会被 live.json 里的设置覆盖
+	Acfun          acfunUser      `json:"acfun"`          // AcFun 帐号相关
+	AutoKeepOnline bool           `json:"autoKeepOnline"` // 是否自动在有守护徽章的直播间挂机
+	Mirai          miraiData      `json:"mirai"`          // Mirai 相关设置
+	Database       databaseConfig `json:"database"`       // 数据库相关设置
 }
 
 // 默认设置
@@ -78,6 +91,15 @@ var config = configData{
 		BotQQPassword: "",
 		SendQQ:        []int64{},
 		SendQQGroup:   []int64{},
+	},
+	Database: databaseConfig{
+		Type:       "", // 默认使用 SQLite
+		SqliteFile: "", // 默认数据库文件名（会保存在程序运行目录）
+		Host:       "",
+		Port:       3306,
+		User:       "",
+		Password:   "",
+		Database:   "",
 	},
 }
 
@@ -407,6 +429,22 @@ func (s streamer) setBoolConfig(tag string, value bool) bool {
 			lPrintWarnf("%s的%s已经被设置成%v", s.longID(), tag, value)
 			return true
 		}
+		if tag == "danmu" && value == false {
+			if vToDb, ok := seekField(&s, "danmuToDb"); ok && vToDb.Kind() == reflect.Bool {
+				if vToDb.Bool() != false {
+					vToDb.SetBool(false)
+					lPrintf("因关闭弹幕，自动关闭 %s 的 danmuToDb", s.longID())
+				}
+			}
+		} else if tag == "danmuToDb" && value == true {
+			// 开启 danmuToDb 时，自动开启 danmu
+			if vDanmu, ok := seekField(&s, "danmu"); ok && vDanmu.Kind() == reflect.Bool {
+				if vDanmu.Bool() != true {
+					vDanmu.SetBool(true)
+					lPrintf("因开启 danmuToDb，自动开启 %s 的 danmu", s.longID())
+				}
+			}
+		}
 		v.SetBool(value)
 		setStreamer(s)
 		lPrintf("成功设置%s的%s为%v", s.longID(), tag, value)
@@ -416,6 +454,11 @@ func (s streamer) setBoolConfig(tag string, value bool) bool {
 
 	lPrintErrf("设置里没有%s，设置失败", tag)
 	return false
+}
+
+// 将弹幕信息写入数据库
+func (s *streamer) processDanmuToDb(file string) {
+	SaveDanmuToDB(file)
 }
 
 // 递归寻找 tag 指定的 value

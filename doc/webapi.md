@@ -34,7 +34,11 @@ web API 默认本地端口为 51880
 
 `http://localhost:51880/adddanmu/23682490` uid 为 23682490 的主播直播时自动下载其直播弹幕
 
-`http://localhost:51880/deldanmu/23682490` 取消自动下载 uid 为 23682490 的主播的直播弹幕
+`http://localhost:51880/deldanmu/23682490` 取消自动下载 uid 为 23682490 的主播的直播弹幕，并取消在直播结束后保存到数据库
+
+`http://localhost:51880/adddanmuToDb/23682490` uid 为 23682490 的主播直播时自动下载其直播弹幕，并在直播结束后保存到数据库
+
+`http://localhost:51880/deldanmuToDb/23682490` 取消 uid 为 23682490 的主播的直播弹幕保存到数据库
 
 `http://localhost:51880/addkeeponline/23682490` uid 为 23682490 的主播直播时在其直播间里挂机
 
