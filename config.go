@@ -471,7 +471,7 @@ func seekField(iface any, tag string) (reflect.Value, bool) {
 				return v, true
 			}
 		}
-		if t := ifv.Type().Field(i).Tag.Get("json"); strings.ToLower(t) == tag {
+		if t := ifv.Type().Field(i).Tag.Get("json"); strings.ToLower(t) == strings.ToLower(tag) {
 			return value, true
 		}
 	}

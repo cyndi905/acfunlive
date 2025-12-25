@@ -296,7 +296,7 @@ func insertDanmuToSQLite(db *sql.DB, liveID string, danmakuList []DanmuItem, bas
 			continue
 		}
 		sendTime := baseTime.Add(time.Duration(d.StartTime * float64(time.Second)))
-		sendTimeStr := sendTime.Format("2006-01-02 15:04:05")
+		sendTimeStr := sendTime.UTC().Format("2006-01-02 15:04:05")
 		_, err := stmt.Exec(liveID, d.StartTime, sendTimeStr, d.UID, d.Content)
 		if err != nil {
 			lPrintErrf("插入弹幕失败: %v", err)
@@ -399,13 +399,13 @@ func SaveDanmuToDB(assFile string) {
 	if err != nil {
 		lPrintWarnf("数据库未找到直播记录 liveId=%s，尝试从 ASS 注释读取...", liveID)
 
-		// 2. fallback：从 ASS 文件读取
+		// 2. 从 ASS 文件读取（读取的baseTime是东八区时间）
 		baseTime, err = extractLiveStartTimeFromASS(assFile)
 		if err != nil {
 			lPrintErrf("无法从 ASS 获取 LiveStartTime: %v", err)
 			return
 		}
-		lPrintf("成功从 ASS 注释读取开播时间: %v", baseTime.Local().Format("2006-01-02 15:04:05.000"))
+		lPrintf("成功从 ASS 注释读取开播时间: %v", baseTime.Format("2006-01-02 15:04:05.000"))
 	}
 
 	// 写入
@@ -413,6 +413,7 @@ func SaveDanmuToDB(assFile string) {
 	case "mysql":
 		err = insertDanmuToMySQL(db, liveID, danmakuList, baseTime)
 	case "sqlite":
+		// 东八区时间传进去，格式化前需要调用.UTC()
 		err = insertDanmuToSQLite(db, liveID, danmakuList, baseTime)
 	}
 	if err != nil {
