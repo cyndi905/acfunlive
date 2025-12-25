@@ -10,9 +10,11 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
 	github.com/getlantern/systray v1.2.2
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/go-cmp v0.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/mattn/go-colorable v0.1.13
+	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/orzogc/acfundanmu v0.0.0-20240910132643-93679007a97d
 	github.com/rs/cors v1.11.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
@@ -23,6 +25,7 @@ require (
 
 require (
 	facette.io/natsort v0.0.0-20181210072756-2cd4dd1e2dcb // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/RomiChan/protobuf v0.1.1-0.20230204044148-2ed269a2e54d // indirect
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7 // indirect
 	github.com/Workiva/go-datastructures v1.1.5 // indirect
