@@ -32,6 +32,8 @@ addrecord uid：自动下载指定主播的直播视频
 delrecord uid：取消自动下载指定主播的直播视频
 adddanmu uid：自动下载指定主播的直播弹幕
 deldanmu uid：取消自动下载指定主播的直播弹幕
+adddanmuToDb uid: 自动下载指定主播直播弹幕，并在直播结束后保存到数据库
+deldanmuToDb uid: 取消指定主播的直播弹幕保存到数据库
 addkeeponline uid：指定主播直播时在其直播间挂机
 delkeeponline uid：取消在指定主播直播时在其直播间挂机
 delconfig uid：删除指定主播的所有设置

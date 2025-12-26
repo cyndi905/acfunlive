@@ -149,7 +149,7 @@ func getLiveStartTime(db *sql.DB, dbType, liveID string) (time.Time, error) {
 	case "mysql":
 		var startTime time.Time
 		err := db.QueryRow("SELECT startTime FROM live WHERE liveId = ?", liveID).Scan(&startTime)
-		return startTime, err
+		return startTime, err // 直接返回即可
 
 	case "sqlite":
 		var timestampMs int64
@@ -168,6 +168,8 @@ func getLiveStartTime(db *sql.DB, dbType, liveID string) (time.Time, error) {
 }
 
 func insertDanmuToMySQL(db *sql.DB, liveID string, danmakuList []DanmuItem, baseTime time.Time) error {
+	beijing := time.FixedZone("CST", 8*3600)
+	baseTime = baseTime.In(beijing) // 修正标记
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -225,8 +227,9 @@ func insertDanmuToMySQL(db *sql.DB, liveID string, danmakuList []DanmuItem, base
 		if d.UID == 0 {
 			continue
 		}
-		sendTime := baseTime.Add(time.Duration(d.StartTime * float64(time.Second)))
-		_, err := stmt.Exec(liveID, d.StartTime, sendTime, d.UID, d.Content)
+		beijing := time.FixedZone("CST", 8*3600)
+		sendTime := baseTime.In(beijing).Add(time.Duration(d.StartTime * float64(time.Second)))
+		_, err := stmt.Exec(liveID, d.StartTime, sendTime.Format("2006-01-02 15:04:05"), d.UID, d.Content)
 		if err != nil {
 			lPrintErrf("插入弹幕失败: %v", err)
 			continue
@@ -291,12 +294,17 @@ func insertDanmuToSQLite(db *sql.DB, liveID string, danmakuList []DanmuItem, bas
 	defer stmt.Close()
 
 	count := 0
+	beijing := time.FixedZone("CST", 8*3600)
 	for _, d := range danmakuList {
 		if d.UID == 0 {
 			continue
 		}
-		sendTime := baseTime.Add(time.Duration(d.StartTime * float64(time.Second)))
-		sendTimeStr := sendTime.UTC().Format("2006-01-02 15:04:05")
+		// 统一确保计算前时区标记正确
+		sendTime := baseTime.In(beijing).Add(time.Duration(d.StartTime * float64(time.Second)))
+
+		// 直接 Format，不要调用 .UTC()
+		sendTimeStr := sendTime.Format("2006-01-02 15:04:05")
+
 		_, err := stmt.Exec(liveID, d.StartTime, sendTimeStr, d.UID, d.Content)
 		if err != nil {
 			lPrintErrf("插入弹幕失败: %v", err)
@@ -332,17 +340,11 @@ func extractLiveStartTimeFromASS(assFile string) (time.Time, error) {
 				continue
 			}
 			timeStr := strings.TrimSpace(parts[1])
-
-			for _, layout := range []string{
-				"2006-01-02 15:04:05.000",
-				"2006-01-02 15:04:05",
-			} {
-				if t, err := time.Parse(layout, timeStr); err == nil {
-					// t 是 UTC 时间（因为 time.Parse 默认按 UTC 解析无时区字符串）
-
-					// 转换为北京时间（CST / Asia/Shanghai），与 getLiveStartTime(SQLite) 保持一致
-					cst, _ := time.LoadLocation("Asia/Shanghai")
-					return t.In(cst), nil
+			beijing := time.FixedZone("CST", 8*3600) // 统一使用 FixedZone 避免环境依赖
+			for _, layout := range []string{"2006-01-02 15:04:05.000", "2006-01-02 15:04:05"} {
+				// 直接按北京时间解析，这样 10:00 读出来就是北京时间的 10:00
+				if t, err := time.ParseInLocation(layout, timeStr, beijing); err == nil {
+					return t, nil
 				}
 			}
 			return time.Time{}, fmt.Errorf("无法解析 LiveStartTime: %s", timeStr)
@@ -377,12 +379,14 @@ func SaveDanmuToDB(assFile string) {
 		dsn = config.Database.SqliteFile
 		db, err = sql.Open("sqlite3", dsn)
 	case "mysql":
-		dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
 			config.Database.User,
 			config.Database.Password,
 			config.Database.Host,
 			config.Database.Port,
 			config.Database.Database)
+		// 手动追加时区部分，避开 Sprintf 的转义规则
+		dsn += "&loc=Asia%2FShanghai"
 		db, err = sql.Open("mysql", dsn)
 	default:
 		lPrintErrf("不支持的数据库类型: %s", config.Database.Type)
@@ -413,7 +417,6 @@ func SaveDanmuToDB(assFile string) {
 	case "mysql":
 		err = insertDanmuToMySQL(db, liveID, danmakuList, baseTime)
 	case "sqlite":
-		// 东八区时间传进去，格式化前需要调用.UTC()
 		err = insertDanmuToSQLite(db, liveID, danmakuList, baseTime)
 	}
 	if err != nil {
